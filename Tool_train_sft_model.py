@@ -21,29 +21,19 @@ model = AutoModelForCausalLM.from_pretrained(model_name)
 # ====== 加载并预处理数据 ======
 dataset = load_dataset("json", data_files={"train": data_path}, split="train")
 
-def preprocess(example):
-    prompt = example["prompt"]
-    completion = example["completion"]
-    full_text = prompt + completion
-
+def preprocess(batch):
+    full_texts = [p + c for p, c in zip(batch["prompt"], batch["completion"])]
+    
     tokenized = tokenizer(
-        full_text,
+        full_texts,
         truncation=True,
         padding="max_length",
         max_length=config["max_seq_length"],
     )
+    
+    tokenized["labels"] = tokenized["input_ids"].copy()
+    return tokenized
 
-    input_ids = tokenized["input_ids"]
-    attention_mask = tokenized["attention_mask"]
-
-    # 设置 labels（等于 input_ids）
-    labels = input_ids.copy()
-
-    return {
-        "input_ids": input_ids,
-        "attention_mask": attention_mask,
-        "labels": labels
-    }
 
 tokenized_dataset = dataset.map(preprocess, batched=True)
 tokenized_dataset = tokenized_dataset.remove_columns(["prompt", "completion"])
@@ -72,7 +62,6 @@ training_args = TrainingArguments(
     save_total_limit=2,
     remove_unused_columns=False,
     auto_find_batch_size=True,
-    callbacks=[EarlyStoppingCallback(early_stopping_patience=2)]
 )
 
 # ====== 启动训练器 ======
