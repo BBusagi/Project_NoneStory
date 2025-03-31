@@ -3,8 +3,8 @@ import json
 import random
 
 # === 输入路径 ===
-excel_path = "resource/WordList_N1_1000.xlsx"  # 词汇文件
-output_path = "requests_batch_1000.jsonl"      # 输出地址
+excel_path = "resource/WordList_N1_3000.xlsx"  # 词汇文件
+output_path = "requests_batch_3000.jsonl"      # 输出地址
 
 STYLES = {
     "文学風": "比喩や抽象的な表現を交え、心理描写を丁寧に行う落ち着いた文体",
@@ -26,8 +26,7 @@ def build_prompt(word_list):
     style_desc = STYLES[selected_style]
     return f"""
 以下のN1語彙を**できるだけ多く自然に使って**、日本語能力試験N1レベルの短編小説（1500文字前後）を作成してください。  
-※文字数は1500字前後に収めてください。それを超えると無効となります。
-※語彙の使用数が**30語未満の場合、その作品は無効とみなされます，スコア0と表記します。**
+※**上下2つの段落に分けて出力**してください。 
 
 語彙リスト：
 {word_string}
@@ -35,22 +34,29 @@ def build_prompt(word_list):
 ---
 文体スタイル：今回は「{selected_style}」を使用してください。  
 説明：{style_desc}  
-※会話表現は必要に応じて挿入して構いませんが、全体としては書き言葉を基本としてください。
-※構成や文体は自由ですが、安易なテンプレート形式にならないように工夫してください。
-ジャンル（物語の題材）：今回は「{genre_string}」を組み合わせて物語を構成してください。  
+※全体としては書き言葉を基本としてください。
+※安易なテンプレート形式にならないように工夫してください。
+ジャンル：今回は「{genre_string}」を組み合わせて物語を構成してください。  
 ---
 出力形式：
 タイトル：<タイトル>  
 文体分類：{selected_style}  
 ジャンル：{genre_string}
-本文：  
-<小説本文を出力>  
+本文（上半分）：
+<上半分の本文（約750字）をここに出力>
+
+---  
+
+本文（下半分）：
+【前情提要】：<上半分の内容を1～2文で要約>
+
+<下半分の本文（約750字）をここに出力>
 """.strip()
 
 # === 构造每一行 JSON ===
 requests = []
 
-for i in range(1000):
+for i in range(3000):
     row = df.iloc[i]
     vocab_id = str(row[0]).strip()
     word_list = [str(w).strip() for w in row[1:] if pd.notna(w) and str(w).strip()]
@@ -64,7 +70,7 @@ for i in range(1000):
         "body": {
             "model": "gpt-4o-mini",
             "temperature": 1.0,
-            "max_tokens": 1400,
+            "max_tokens": 2200,
             "messages": [
                 {"role": "system", "content": "あなたは日本語の小説作家です。"},
                 {"role": "user", "content": prompt}

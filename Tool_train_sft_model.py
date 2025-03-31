@@ -1,45 +1,97 @@
-from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, TrainingArguments
+import json
+import time
+from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, TrainingArguments, EarlyStoppingCallback
 from datasets import load_dataset
 
-# Step 1: 模型和 tokenizer 载入
-model_name = "rinna/japanese-gpt2-small"
-tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=False)
+
+# ====== 读取 config.json 配置参数 ======
+with open("config.json", "r", encoding="utf-8") as f:
+    config = json.load(f)
+
+model_name = config["model_name"]
+data_path = config["data_path"]
+output_dir = config["output_dir"]
+
+# ====== 加载 tokenizer 和模型 ======
+tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
+tokenizer.pad_token = tokenizer.eos_token  # GPT2 默认无 pad token
+
 model = AutoModelForCausalLM.from_pretrained(model_name)
 
-# Step 2: 加载数据集
-dataset = load_dataset("json", data_files={"train": "output/test6-train1/train_data_with_prompt.jsonl"}, split="train")
+# ====== 加载并预处理数据 ======
+dataset = load_dataset("json", data_files={"train": data_path}, split="train")
 
-# Step 3: Tokenize
-def tokenize(batch):
-    tokens = tokenizer(
-        [p + c for p, c in zip(batch["prompt"], batch["completion"])],
+def preprocess(example):
+    prompt = example["prompt"]
+    completion = example["completion"]
+    full_text = prompt + completion
+
+    tokenized = tokenizer(
+        full_text,
         truncation=True,
-        max_length=512,
-        padding="max_length"
+        padding="max_length",
+        max_length=config["max_seq_length"],
     )
-    tokens["labels"] = tokens["input_ids"].copy()  # ✅ 添加 labels 字段
-    return tokens
 
+    input_ids = tokenized["input_ids"]
+    attention_mask = tokenized["attention_mask"]
 
-tokenized_dataset = dataset.map(tokenize, batched=True)
+    # 设置 labels（等于 input_ids）
+    labels = input_ids.copy()
 
-# Step 4: 训练参数
+    return {
+        "input_ids": input_ids,
+        "attention_mask": attention_mask,
+        "labels": labels
+    }
+
+tokenized_dataset = dataset.map(preprocess, batched=True)
+tokenized_dataset = tokenized_dataset.remove_columns(["prompt", "completion"])
+
+def is_valid(sample):
+    try:
+        return all(
+            isinstance(sample[k], list) and all(isinstance(i, int) for i in sample[k])
+            for k in ["input_ids", "attention_mask", "labels"]
+        )
+    except:
+        return False
+tokenized_dataset = tokenized_dataset.filter(is_valid)
+
+print(f"有效样本数量：{len(tokenized_dataset)}")
+
+# ====== 训练参数 ======
 training_args = TrainingArguments(
-    output_dir="./sft-model-n1",
-    num_train_epochs=3,
-    per_device_train_batch_size=2,
-    gradient_accumulation_steps=4,
-    fp16=True,  # 若使用支持的 GPU
-    logging_steps=10,
-    save_strategy="epoch"
+    output_dir=output_dir,
+    per_device_train_batch_size=config["batch_size"],
+    num_train_epochs=config["epochs"],
+    learning_rate=config["learning_rate"],
+    fp16=config["fp16"],
+    logging_steps=20,
+    save_strategy="epoch",
+    save_total_limit=2,
+    remove_unused_columns=False,
+    auto_find_batch_size=True,
+    callbacks=[EarlyStoppingCallback(early_stopping_patience=2)]
 )
 
-# Step 5: Trainer 实例
+# ====== 启动训练器 ======
 trainer = Trainer(
     model=model,
     args=training_args,
-    train_dataset=tokenized_dataset
+    train_dataset=tokenized_dataset,
+    tokenizer=tokenizer,
 )
 
-# Step 6: 开始训练
-trainer.train()
+tokenized_dataset[10]
+
+print("开始第一次训练...")
+try:
+    trainer.train()
+except Exception as e:
+    print(f"训练过程中发生错误：{e}")
+    trainer.save_model(output_dir + "/interrupted_checkpoint")
+
+time.sleep(5)
+
+print("✅ 训练完成✅ ")

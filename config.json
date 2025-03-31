@@ -1,0 +1,10 @@
+{
+    "model_name": "rinna/japanese-gpt2-medium",
+    "data_path": "./output/test10-train2/train_data_with_prompt.jsonl",
+    "output_dir": "./sft-model-n1",
+    "batch_size": 2,
+    "epochs": 3,
+    "learning_rate": 5e-5,
+    "max_seq_length": 1024,
+    "fp16": true
+  }

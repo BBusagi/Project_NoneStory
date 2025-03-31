@@ -9,8 +9,8 @@ function decodeUnicode(str) {
 }
 
 async function main() {
-  const inputFile = "output/test8/batch_67e93c387f548190b71e0093fc7687db_output.jsonl";
-  const outputDir = "output/test8";
+  const inputFile = "output/test10/batch_67ea83c62a7c81909bdf5cb6e7ab0130_output.jsonl";
+  const outputDir = "output/test10";
 
   await fs.mkdir(outputDir, { recursive: true });
 

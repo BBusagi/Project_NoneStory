@@ -1,6 +1,8 @@
 env
 python 3.10
-conda activate rinna-env
+nvidia-smi - 查看显卡配置
+conda activate rinna-env - 切换到训练环境
+\\u.{4} - [URL](https://blog.cloudnative.co.jp/23733/)
 
 + 总结建议（路线推荐）
 现在	使用 GPT-4o 生成优质语料，训练small小型模型
