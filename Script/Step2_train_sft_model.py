@@ -1,11 +1,8 @@
 import os
 import json
-import threading
-from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, TrainingArguments, EarlyStoppingCallback
+from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, TrainingArguments
 from datasets import load_dataset
 from pathlib import Path
-
-# sft训练脚本
 
 # ====== 读取 config.json 配置参数 ======
 with open("./config.json", "r", encoding="utf-8") as f:
@@ -35,24 +32,31 @@ last_checkpoint = get_last_checkpoint(output_dir)
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
 tokenizer.pad_token = tokenizer.eos_token  # GPT2 默认无 pad token
 
-model = AutoModelForCausalLM.from_pretrained(model_name)
+model = None
+try:
+    model = AutoModelForCausalLM.from_pretrained(last_checkpoint if last_checkpoint else model_name)
+    param_count = sum(p.numel() for p in model.parameters())
+    model_dir_used = model.config._name_or_path
+    print(f"✅ 模型加载成功，共 {param_count:,} 个参数，加载自：{model_dir_used}")
+    if len(model.state_dict()) == 0:
+        print("⚠️ 警告：model.state_dict() 为空，模型可能未加载完整！")
+except Exception as e:
+    print(f"❌ 模型加载失败：{e}")
+    model = None
 
 # ====== 加载并预处理数据 ======
 dataset = load_dataset("json", data_files={"train": data_path}, split="train")
 
 def preprocess(batch):
     full_texts = [p + c for p, c in zip(batch["prompt"], batch["completion"])]
-    
     tokenized = tokenizer(
         full_texts,
         truncation=True,
         padding="max_length",
         max_length=config["max_seq_length"],
     )
-    
     tokenized["labels"] = tokenized["input_ids"].copy()
     return tokenized
-
 
 tokenized_dataset = dataset.map(preprocess, batched=True)
 tokenized_dataset = tokenized_dataset.remove_columns(["prompt", "completion"])
@@ -65,11 +69,14 @@ def is_valid(sample):
         )
     except:
         return False
+
 tokenized_dataset = tokenized_dataset.filter(is_valid)
 
-# ===== 中途检测 =====
-print(f"有效样本数量：{len(tokenized_dataset)}")
-print("输出模型路径为：", output_dir)
+print(f"✅ 有效样本数量：{len(tokenized_dataset)}")
+print("🗂️ 输出模型路径为：", output_dir)
+
+if model is None or len(model.state_dict()) == 0:
+    raise RuntimeError("❌ 模型未成功加载，无法开始训练")
 
 # ====== 训练参数 ======
 training_args = TrainingArguments(
@@ -94,35 +101,28 @@ trainer = Trainer(
     tokenizer=tokenizer,
 )
 
-# ====== 设置自动中止训练时间（单位：秒） ======
-MAX_TRAIN_TIME = 90 * 60  # 90分钟
-
-# 训练时长结束后中断训练的函数
-def interrupt_training():
-    print(f"\n⏰ 达到 {MAX_TRAIN_TIME // 60} 分钟限制，尝试中断训练...")
-    raise TimeoutError("训练时间已到，自动中断。")
-
-# 启动定时器（在后台线程执行中断）
-timer = threading.Timer(MAX_TRAIN_TIME, interrupt_training)
-timer.start()
-
-# ====== 启动训练器 ======
+# ====== 启动训练流程 ======
 try:
     if last_checkpoint is None:
         print("🆕 当前为新模型训练")
     else:
         print(f"🔁 检测到已有 checkpoint：{last_checkpoint}，将继续训练")
-    trainer.train(resume_from_checkpoint=last_checkpoint)
-
-except TimeoutError as e:
-    print(f"🛑 {str(e)}，保存中断模型...")
-    trainer.save_model(os.path.join(output_dir, "interrupted_checkpoint"))
+    trainer.train()
 
 except Exception as e:
     print(f"❌ 训练出错：{e}")
-    trainer.save_model(os.path.join(output_dir, "interrupted_checkpoint"))
+    if model is not None and len(model.state_dict()) > 0:
+        interrupted_path = os.path.join(output_dir, "interrupted_checkpoint")
+        trainer.save_model(interrupted_path)
+        print(f"💾 出错模型已保存至：{interrupted_path}")
+    else:
+        print("⚠️ 模型无效，未保存任何内容")
 
 finally:
-    trainer.save_model(os.path.join(output_dir, "final_model"))
-    timer.cancel()  # 清除定时器
-    print("✅ 训练完成✅")
+    if model is not None and len(model.state_dict()) > 0:
+        final_path = os.path.join(output_dir, "final_model")
+        trainer.save_model(final_path)
+        print(f"✅ 最终模型已保存至：{final_path}")
+    else:
+        print("⚠️ 未保存最终模型（模型无效）")
+    print("✅ 训练完成 ✅")
