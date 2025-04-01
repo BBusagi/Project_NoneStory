@@ -3,16 +3,33 @@ import json
 import threading
 from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, TrainingArguments, EarlyStoppingCallback
 from datasets import load_dataset
+from pathlib import Path
 
 # sft训练脚本
 
 # ====== 读取 config.json 配置参数 ======
-with open("config.json", "r", encoding="utf-8") as f:
+with open("./config.json", "r", encoding="utf-8") as f:
     config = json.load(f)
 
+base_dir = Path(__file__).parent.resolve().parent
 model_name = config["model_name"]
-data_path = config["data_path"]
-output_dir = config["output_dir"]
+data_path = str((base_dir / config["data_path"]).resolve())
+output_dir = str((base_dir / config["output_dir"]).resolve())
+
+# ====== 获取最近的 checkpoint（用于断点续训） ======
+def get_last_checkpoint(output_dir):
+    if not os.path.exists(output_dir):
+        return None
+    checkpoints = [
+        os.path.join(output_dir, d)
+        for d in os.listdir(output_dir)
+        if d.startswith("checkpoint-")
+    ]
+    if not checkpoints:
+        return None
+    return sorted(checkpoints, key=lambda x: int(x.split("-")[-1]))[-1]
+
+last_checkpoint = get_last_checkpoint(output_dir)
 
 # ====== 加载 tokenizer 和模型 ======
 tokenizer = AutoTokenizer.from_pretrained(model_name, use_fast=True)
@@ -54,21 +71,6 @@ tokenized_dataset = tokenized_dataset.filter(is_valid)
 print(f"有效样本数量：{len(tokenized_dataset)}")
 print("输出模型路径为：", output_dir)
 
-# ====== 获取最近的 checkpoint（用于断点续训） ======
-def get_last_checkpoint(output_dir):
-    if not os.path.exists(output_dir):
-        return None
-    checkpoints = [
-        os.path.join(output_dir, d)
-        for d in os.listdir(output_dir)
-        if d.startswith("checkpoint-")
-    ]
-    if not checkpoints:
-        return None
-    return sorted(checkpoints, key=lambda x: int(x.split("-")[-1]))[-1]
-
-last_checkpoint = get_last_checkpoint(output_dir)
-
 # ====== 训练参数 ======
 training_args = TrainingArguments(
     output_dir=output_dir,
@@ -77,7 +79,8 @@ training_args = TrainingArguments(
     learning_rate=config["learning_rate"],
     fp16=config["fp16"],
     logging_steps=20,
-    save_strategy="epoch",
+    save_strategy="steps",
+    save_steps=500,
     save_total_limit=2,
     remove_unused_columns=False,
     auto_find_batch_size=True,
@@ -105,7 +108,10 @@ timer.start()
 
 # ====== 启动训练器 ======
 try:
-    print(f"🚀 开始训练（从 checkpoint: {last_checkpoint}）")
+    if last_checkpoint is None:
+        print("🆕 当前为新模型训练")
+    else:
+        print(f"🔁 检测到已有 checkpoint：{last_checkpoint}，将继续训练")
     trainer.train(resume_from_checkpoint=last_checkpoint)
 
 except TimeoutError as e:
@@ -117,5 +123,6 @@ except Exception as e:
     trainer.save_model(os.path.join(output_dir, "interrupted_checkpoint"))
 
 finally:
+    trainer.save_model(os.path.join(output_dir, "final_model"))
     timer.cancel()  # 清除定时器
     print("✅ 训练完成✅")

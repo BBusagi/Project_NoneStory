@@ -1,8 +1,24 @@
 env
 python 3.10
-nvidia-smi - 查看显卡配置
 conda activate rinna-env - 切换到训练环境
+nvidia-smi -l 1 - 查看显卡配置
 \\u.{4} - [URL](https://blog.cloudnative.co.jp/23733/)
+
+### Manual
++ Step00 环境配置和检测
+    + [text](Script/Tool_check_api_connection.py)
++ Step01 准备语料
+    + [text](Script/Step1_generate_json.py)
+    + [text](Script/Tool_convert_jsonl_to_txt.mjs)
+    + [text](Script/Step1_prepare_training_data.py)
++ Step02 训练模型 断点保存
+    + [text](Script/Tool_check_gpu_status.py)
+    + [text](Script/Step2_train_sft_model.py)
+    + [text](Script/Step2_save_model.py)
++ Step03 模型评估
+    + [text](Script/Step3_infer_and_evaluate.py)
+    + [text](Script/Tool_run_model_inference.py)
+    + [text](Script/Step3_compare_multiple_models.py)
 
 ### DevLog
     + 模型状态： 未经训练 很离谱 无法使用
@@ -23,7 +39,7 @@ conda activate rinna-env - 切换到训练环境
     + 预处理语料，生成训练JSON
     + sft训练尝试
     > BUG 全参调节 长度不一致 - 参数提纯
-    + 全参调节
+    + 全参调节（train1）
     > BUG 系统蓝屏 显存溢出 - 重新pythor调用GPU
     + 断点保存 多线程开启
     + 每次运行 90 分钟训练 
