@@ -3,6 +3,7 @@ import time
 from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, TrainingArguments, EarlyStoppingCallback
 from datasets import load_dataset
 
+# sft训练脚本
 
 # ====== 读取 config.json 配置参数 ======
 with open("config.json", "r", encoding="utf-8") as f:

@@ -1,6 +1,8 @@
 import json
 import re
 
+# 用于预处理训练材料
+
 input_file = "output/test12/batch_67ea849b157081909a71a289ffe6241c_output.jsonl"
 output_file = "train_data_with_prompt.jsonl"
 

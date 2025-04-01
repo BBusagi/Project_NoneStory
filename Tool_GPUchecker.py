@@ -1,4 +1,7 @@
 import torch
+
+# 测试pytorch是否可以调用GPU进行训练
+
 print(torch.__version__)
 print(torch.version.cuda) 
 print(torch.cuda.is_available())      # 应该为 True

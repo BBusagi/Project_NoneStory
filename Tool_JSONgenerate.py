@@ -2,6 +2,8 @@ import pandas as pd
 import json
 import random
 
+# 用于生成Batch文件
+
 # === 输入路径 ===
 excel_path = "resource/WordList_N1_3000.xlsx"  # 词汇文件
 output_path = "requests_batch_3000.jsonl"      # 输出地址

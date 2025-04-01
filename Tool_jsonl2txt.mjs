@@ -1,6 +1,8 @@
 import fs from "fs/promises";
 import path from "path";
 
+// 用于将Batch结果转化为单独的text进行保存
+
 // 解码 Unicode（\uXXXX）为正常字符
 function decodeUnicode(str) {
   return str.replace(/\\u[\dA-Fa-f]{4}/g, (match) => {
