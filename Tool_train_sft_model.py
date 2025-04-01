@@ -1,5 +1,6 @@
+import os
 import json
-import time
+import threading
 from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, TrainingArguments, EarlyStoppingCallback
 from datasets import load_dataset
 
@@ -49,7 +50,24 @@ def is_valid(sample):
         return False
 tokenized_dataset = tokenized_dataset.filter(is_valid)
 
+# ===== 中途检测 =====
 print(f"有效样本数量：{len(tokenized_dataset)}")
+print("输出模型路径为：", output_dir)
+
+# ====== 获取最近的 checkpoint（用于断点续训） ======
+def get_last_checkpoint(output_dir):
+    if not os.path.exists(output_dir):
+        return None
+    checkpoints = [
+        os.path.join(output_dir, d)
+        for d in os.listdir(output_dir)
+        if d.startswith("checkpoint-")
+    ]
+    if not checkpoints:
+        return None
+    return sorted(checkpoints, key=lambda x: int(x.split("-")[-1]))[-1]
+
+last_checkpoint = get_last_checkpoint(output_dir)
 
 # ====== 训练参数 ======
 training_args = TrainingArguments(
@@ -73,15 +91,31 @@ trainer = Trainer(
     tokenizer=tokenizer,
 )
 
-tokenized_dataset[10]
+# ====== 设置自动中止训练时间（单位：秒） ======
+MAX_TRAIN_TIME = 90 * 60  # 90分钟
 
-print("开始第一次训练...")
+# 训练时长结束后中断训练的函数
+def interrupt_training():
+    print(f"\n⏰ 达到 {MAX_TRAIN_TIME // 60} 分钟限制，尝试中断训练...")
+    raise TimeoutError("训练时间已到，自动中断。")
+
+# 启动定时器（在后台线程执行中断）
+timer = threading.Timer(MAX_TRAIN_TIME, interrupt_training)
+timer.start()
+
+# ====== 启动训练器 ======
 try:
-    trainer.train()
+    print(f"🚀 开始训练（从 checkpoint: {last_checkpoint}）")
+    trainer.train(resume_from_checkpoint=last_checkpoint)
+
+except TimeoutError as e:
+    print(f"🛑 {str(e)}，保存中断模型...")
+    trainer.save_model(os.path.join(output_dir, "interrupted_checkpoint"))
+
 except Exception as e:
-    print(f"训练过程中发生错误：{e}")
-    trainer.save_model(output_dir + "/interrupted_checkpoint")
+    print(f"❌ 训练出错：{e}")
+    trainer.save_model(os.path.join(output_dir, "interrupted_checkpoint"))
 
-time.sleep(5)
-
-print("✅ 训练完成✅ ")
+finally:
+    timer.cancel()  # 清除定时器
+    print("✅ 训练完成✅")
