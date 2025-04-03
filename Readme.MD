@@ -1,7 +1,7 @@
-env
-python 3.10
-conda activate rinna-env - 切换到训练环境
-nvidia-smi -l 1 - 查看显卡配置
+env  
+python 3.10  
+conda activate rinna-env - 切换到训练环境  
+nvidia-smi -l 1 - 查看显卡配置  
 \\u.{4} - [URL](https://blog.cloudnative.co.jp/23733/)
 
 ## 项目介绍
@@ -14,19 +14,19 @@ nvidia-smi -l 1 - 查看显卡配置
 
 ### Manual
 + Step00 环境配置和检测
-    + [text](Script/Tool_check_api_connection.py)
+    + [Tool_check_api_connection](Script/Tool_check_api_connection.py)
 + Step01 准备语料
-    + [text](Script/Step1_generate_json.py)
-    + [text](Script/Tool_convert_jsonl_to_txt.mjs)
-    + [text](Script/Step1_prepare_training_data.py)
+    + [Step1_generate_json](Script/Step1_generate_json.py)
+    + [Tool_convert_jsonl_to_txt](Script/Tool_convert_jsonl_to_txt.mjs)
+    + [Step1_prepare_training_data](Script/Step1_prepare_training_data.py)
 + Step02 训练模型 断点保存
-    + [text](Script/Tool_check_gpu_status.py)
-    + [text](Script/Step2_train_sft_model.py)
-    + [text](Script/Step2_save_model.py)
+    + [Tool_check_gpu_status](Script/Tool_check_gpu_status.py)
+    + [Step2_train_sft_model](Script/Step2_train_sft_model.py)
+    + [Step2_save_model](Script/Step2_save_model.py)
 + Step03 模型评估
-    + [text](Script/Step3_infer_and_evaluate.py)
-    + [text](Script/Tool_run_model_inference.py)
-    + [text](Script/Step3_compare_multiple_models.py)
+    + [Step3_infer_and_evaluate](Script/Step3_infer_and_evaluate.py)
+    + [Tool_run_model_inference](Script/Tool_run_model_inference.py)
+    + [Step3_compare_multiple_models](Script/Step3_compare_multiple_models.py)
 
 ### DevLog
     + 模型状态： 未经训练 很离谱 无法使用
@@ -38,7 +38,7 @@ nvidia-smi -l 1 - 查看显卡配置
     + 修改prompt，到达满意阶段
     + 预处理语料，生成训练JSON
     + sft训练尝试
-    + 模型使用检测：可行 模仿语料成功 长度控制有问题 整体文章较肤浅
+    + 模型使用检测：**可行 模仿语料成功 长度控制有问题 整体文章较肤浅**
 
 + ✅Step02  gpt4长文语料 + rinnamedium
     + prompt修改更新
@@ -61,7 +61,7 @@ nvidia-smi -l 1 - 查看显卡配置
     > -- trainer.train(~~resume_from_checkpoint~~)
     > -- ✅已解决
     + sft训练
-    + 模型使用检测：模型状态回滚
+    + 模型使用检测：**模型状态回滚，生成长度不足，效果极差**
 
 ### Roadmap
 + 训练监控 完整性检测相关模组
