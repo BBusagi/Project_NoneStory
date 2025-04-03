@@ -1,20 +1,25 @@
 import os
 import torch
+import json
 from transformers import AutoTokenizer, AutoModelForCausalLM, Trainer, TrainingArguments
 from datasets import load_dataset
+from pathlib import Path
 
 # 测试用的脚本
 
 # ====== 路径配置 ======
-MODEL_DIR = "sft-model-n1/medium/final_model"  # 训练完保存的模型目录
-VAL_DATA_PATH = "output/val_data_with_prompt.jsonl"  # 可选，验证集数据路径（如不评估可为空）
+with open("./config.json", "r", encoding="utf-8") as f:
+    config = json.load(f)
+base_dir = Path(__file__).parent.resolve().parent
+
+MODEL_DIR = os.path.join(base_dir, "sft-model-n1", "medium", "checkpoint-2880")  # 训练完保存的模型目录
+VAL_DATA_PATH = os.path.join(base_dir, "output", "val_data_with_prompt.jsonl") # 可选，验证集数据路径（如不评估可为空）
 USE_EVAL = os.path.exists(VAL_DATA_PATH)
 
 # ====== 加载模型与 tokenizer ======
 print(f"🔄 加载模型：{MODEL_DIR}")
 tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR)
 model = AutoModelForCausalLM.from_pretrained(MODEL_DIR)
-model.eval()
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 model.to(device)
@@ -26,7 +31,7 @@ def generate(prompt, max_length=100):
     with torch.no_grad():
         outputs = model.generate(
             **inputs,
-            max_new_tokens=max_length,
+            max_length=1024,
             do_sample=True,
             top_p=0.95,
             temperature=0.8,
@@ -55,7 +60,7 @@ if USE_EVAL:
             full_texts,
             truncation=True,
             padding="max_length",
-            max_length=512,
+            max_length=1024,
         )
         tokenized["labels"] = tokenized["input_ids"].copy()
         return tokenized

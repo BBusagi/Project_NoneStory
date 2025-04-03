@@ -4,6 +4,14 @@ conda activate rinna-env - 切换到训练环境
 nvidia-smi -l 1 - 查看显卡配置
 \\u.{4} - [URL](https://blog.cloudnative.co.jp/23733/)
 
+## 项目介绍
+本项目，为日语N1单词学习辅助生成式AI，目的是通过特殊训练后的文生文AI生成N1的现代小说故事来辅助用户学习和记忆N1相关的知识点。
+
+### 当前问题
+我先用了复杂的语料（[train2](output/train2/train_data_with_prompt.jsonl)）训练获得了[ckpoint2880](sft-model-n1/medium/checkpoint-2880),表现良好。
+但是反过来继续用简单语料[train1](output/train1/train_data_with_prompt.jsonl)训练之后获得的[ckpoint1550](sft-model-n1/medium/checkpoint-1500)表现就很差。
+为什么低质量语料会对已经过训练的模型有这么大的负面影响，理论上不是应该继续提升，但提升很小吗？
+
 ### Manual
 + Step00 环境配置和检测
     + [text](Script/Tool_check_api_connection.py)
@@ -52,16 +60,18 @@ nvidia-smi -l 1 - 查看显卡配置
     > 2. resume_from_checkpoint = 老版本，默认只支持.bin；新版本保存格式为.safetensors
     > -- trainer.train(~~resume_from_checkpoint~~)
     > -- ✅已解决
-    检查剩余步骤，输出“预计还需 X 次训练” 
-    记录每次的 step、耗时、loss 到日志文件
-    
+    + sft训练
+    + 模型使用检测：模型状态回滚
 
 ### Roadmap
++ 训练监控 完整性检测相关模组
++ 检查剩余步骤，输出“预计还需 X 次训练” 
++ 记录每次的 step、耗时、loss 到日志文件
 + API部署
 + Fultter部署
 + 加入评级系统
 > “浓度评分”更适合在 生成完成后做自动评分或筛选，而不是一开始就塞进训练目标中
 + 加入文字加粗等
 + 情节控制机制
-+ 商业化初期 若训练资源允许，可尝试知识蒸馏 + 链式优化，打造轻量高效模型
-+ 商业化后期 构建自己的“日语学习大模型”，支持输入 JLPT 级别 + 输出个性化文本
++ 后期1 若训练资源允许，可尝试知识蒸馏 + 链式优化，打造轻量高效模型
++ 后期2 构建自己的“日语学习大模型”，支持输入 JLPT 级别 + 输出个性化文本
