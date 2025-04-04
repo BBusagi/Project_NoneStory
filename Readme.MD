@@ -34,7 +34,7 @@ nvidia-smi -l 1 - 查看显卡配置
 
 ### DevLog
     + 模型状态： 未经训练 很离谱 无法使用
-+ ✅Step01  chatGPT+rinnasmall
++ ✅Step01  chatGPT+rinna/small
     + 环境配置
     + OpenAPI测试和rinna测试
     + 尝试Batch调用
@@ -44,14 +44,14 @@ nvidia-smi -l 1 - 查看显卡配置
     + sft训练尝试
     + 测试：**可行 模仿语料成功 长度控制有问题 整体文章较肤浅**
 
-+ ✅Step02  gpt4长文语料 + rinnamedium
++ ✅Step02  gpt4长文语料 + rinna/medium
     + prompt修改更新
     + batch更新 
     >BUG Limit: 90,000 enqueued tokens - 4o更换为4omini
     + 预处理语料，生成训练JSON
-    + sft训练尝试
+    + sft训练测试
     > BUG 全参调节 长度不一致 - 参数提纯
-    + 全参调节（train1）
+    + sft训练 全参调节（train2）
     > BUG 系统蓝屏 显存溢出 - 重新pythor调用GPU
     + 断点保存 多线程开启
     + 每次运行 90 分钟训练 
@@ -64,7 +64,7 @@ nvidia-smi -l 1 - 查看显卡配置
     > 2. resume_from_checkpoint = 老版本，默认只支持.bin；新版本保存格式为.safetensors
     > -- trainer.train(~~resume_from_checkpoint~~)
     > -- ✅已解决
-    + sft训练
+    + sft训练  全参调节（train1）
     + 检测：checkpoint-1500 -> **模型状态回滚，生成长度不足，效果极差**
 
 ### Roadmap
