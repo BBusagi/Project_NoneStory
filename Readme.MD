@@ -56,6 +56,7 @@ nvidia-smi -l 1 - 查看显卡配置
     + 断点保存 多线程开启
     + 每次运行 90 分钟训练 
     + 测试：checkpoint-2880 -> **表现状态优秀，生成内容符合标准**
+    ![](readme/train1(2880).png)
     + 断点续练
     > BUG lm_head
     > 1. 缺失模型参数权重文件（pytorch—_model.bin）
@@ -65,7 +66,10 @@ nvidia-smi -l 1 - 查看显卡配置
     > -- trainer.train(~~resume_from_checkpoint~~)
     > -- ✅已解决
     + sft训练  全参调节（train1）
-    + 检测：checkpoint-1500 -> **模型状态回滚，生成长度不足，效果极差**
+    + 检测：checkpoint-1500 -> 
+    第一次测试**模型状态回滚，生成长度不足，效果极差**
+    第二次测试**表现优秀，长度已增长**
+    ![](readme/train2(1500).png)
 
 ### Roadmap
 + 训练监控 完整性检测相关模组
@@ -79,5 +83,3 @@ nvidia-smi -l 1 - 查看显卡配置
 + 情节控制机制
 + 后期1 若训练资源允许，可尝试知识蒸馏 + 链式优化，打造轻量高效模型
 + 后期2 构建自己的“日语学习大模型”，支持输入 JLPT 级别 + 输出个性化文本
-
-This is a test to dev branch
