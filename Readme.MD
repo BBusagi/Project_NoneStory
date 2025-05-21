@@ -16,6 +16,12 @@ nvidia-smi -l 1 - 查看显卡配置
 但是反过来继续用简单语料[train1](output/train1/train_data_with_prompt.jsonl)训练之后获得的[ckpoint1550](sft-model-n1/medium/checkpoint-1500)表现就很差。
 为什么低质量语料会对已经过训练的模型有这么大的负面影响，理论上不是应该继续提升，但提升很小吗？
 
+### Program Design
+1. 抽取日语 N1等级考试所需要的单词
+2. 使用 GPT-4 自动生成高质量语料
+3. 构建训练用数据集
+4. 全参调节模型（rinna-medium）
+
 ### Manual
 + Step00 环境配置和检测
     + [Tool_check_api_connection](Script/Tool_check_api_connection.py)
