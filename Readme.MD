@@ -8,6 +8,8 @@ nvidia-smi -l 1 - 查看显卡配置
 语言模型定制项目，为日语N1单词学习辅助生成式AI，目的是通过特殊训练后的文生文AI生成N1的现代小说故事来辅助用户学习和记忆N1相关的知识点。
 
 ## Model
+[sft-nonestory-train002](https://huggingface.co/BBusagi/sft-nonestory-train002)
+[sft-nonestory-train001](https://huggingface.co/BBusagi/sft-nonestory-train001)
 [HuggingFace repo](https://huggingface.co/BBusagi/sft-model-n1)
 
 ##
@@ -61,7 +63,7 @@ nvidia-smi -l 1 - 查看显卡配置
     > BUG 系统蓝屏 显存溢出 - 重新pythor调用GPU
     + 断点保存 多线程开启
     + 每次运行 90 分钟训练 
-    + 测试：checkpoint-2880 -> **表现状态优秀，生成内容符合标准**
+    + 测试：[checkpoint-2880](https://huggingface.co/BBusagi/sft-nonestory-train001) -> **表现状态优秀，生成内容符合标准**
     ![](readme/train1(2880).png)
     + 断点续练
     > BUG lm_head
@@ -72,7 +74,7 @@ nvidia-smi -l 1 - 查看显卡配置
     > -- trainer.train(~~resume_from_checkpoint~~)
     > -- ✅已解决
     + sft训练  全参调节（train1）
-    + 检测：checkpoint-1500 -> 
+    + 检测：[checkpoint-1500](https://huggingface.co/BBusagi/sft-nonestory-train002) -> 
     第一次测试**模型状态回滚，生成长度不足，效果极差**
     第二次测试**表现优秀，长度已增长**
     ![](readme/train2(1500).png)
