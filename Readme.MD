@@ -8,9 +8,9 @@ nvidia-smi -l 1 - 查看显卡配置
 语言模型定制项目，为日语N1单词学习辅助生成式AI，目的是通过特殊训练后的文生文AI生成N1的现代小说故事来辅助用户学习和记忆N1相关的知识点。
 
 ## Model
-[sft-nonestory-train002](https://huggingface.co/BBusagi/sft-nonestory-train002)
-[sft-nonestory-train001](https://huggingface.co/BBusagi/sft-nonestory-train001)
-[HuggingFace repo](https://huggingface.co/BBusagi/sft-model-n1)
+[sft-nonestory-train002](https://huggingface.co/BBusagi/sft-nonestory-train002)  
+[sft-nonestory-train001](https://huggingface.co/BBusagi/sft-nonestory-train001)  
+[HuggingFace repo](https://huggingface.co/BBusagi/sft-model-n1)  
 
 ##
 ### TODO
