@@ -5,7 +5,7 @@ nvidia-smi -l 1 - 查看显卡配置
 \\u.{4} - [URL](https://blog.cloudnative.co.jp/23733/)  
 
 ## 项目介绍
-语言模型定制项目，为日语N1单词学习辅助生成式AI，目的是通过特殊训练后的文生文AI生成N1的现代小说故事来辅助用户学习和记忆N1相关的知识点。
+语言模型定制项目，为日语N1单词学习辅助生成式AI，目的是通过特殊训练后的文生文AI生成N1的现代小说故事来辅助用户学习和记忆N1相关的知识点。通过LLM辅助用户创造出优秀的文章，既能享受故事，又能学习日语，达成教育与娱乐并存的目的。
 
 ## Model & Demo
 [Demo - HuggingFaceSpace](https://huggingface.co/spaces/BBusagi/sft-nonestory-generator)  
