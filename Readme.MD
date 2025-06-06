@@ -13,18 +13,18 @@ nvidia-smi -l 1 - 查看显卡配置
 [sft-nonestory-train001](https://huggingface.co/BBusagi/sft-nonestory-train001)  
 
 ##
-### TODO
-[Bug]网页部署输出无法访问
-[Task]模型目前输出不稳定
-[Task]手机，低配置电脑长时间无响应
+### Status
+[Bug]网页部署输出无法访问  
+[Task]模型目前输出不稳定  
+[Task]手机，低配置电脑长时间无响应  
 
-### Program Design
+### System Design
 1. 抽取日语 N1等级考试所需要的单词
 2. 使用 GPT-4 自动生成高质量语料
 3. 构建训练用数据集
 4. 全参调节模型（rinna-medium）
 
-### Manual
+### Dev Manual
 + Step00 环境配置和检测
     + [Tool_check_api_connection](Script/Tool_check_api_connection.py)
 + Step01 准备语料
@@ -91,7 +91,7 @@ nvidia-smi -l 1 - 查看显卡配置
     + 功能 添加手动删除
 
 
-### Roadmap
+### TODO
 #### 模型
 + 训练监控 完整性检测相关模组
 + 检查剩余步骤，输出“预计还需 X 次训练” 
@@ -106,5 +106,5 @@ nvidia-smi -l 1 - 查看显卡配置
 + 后期2 构建自己的“日语学习大模型”，支持输入 JLPT 级别 + 输出个性化文本
 
 #### 前端
-+ 流生成
-+ 任务队列系统
++ 流生成, 实时输出
++ 任务队列系统，多人访问时轮询生成
