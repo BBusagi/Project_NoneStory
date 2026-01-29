@@ -1,6 +1,5 @@
 # NoneStory - JLPT N1 Learning Story Generator
 
-**Project Retrospective (Brief)**  
 **Current Status: Paused**  
 **Key Challenge:** Improving client response speed, especially on mobile  
 **What I Learned:**  
