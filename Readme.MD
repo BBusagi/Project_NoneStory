@@ -1,7 +1,7 @@
 # NoneStory - JLPT N1 Learning Story Generator
 
 **Current Status: Paused**  
-**Key Words:** LLM x SFT x Language Education
+**Key Words:** LLM x SFT x Language Education  
 **Key Challenge:** Improving client response speed, especially on mobile  
 **What I Learned:**  
 1. Text LLMs are more demanding in training cost, inference latency, and quality control  
